@@ -69,9 +69,8 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASE_URL = os.environ.get("DATABASE_URL")
 DB_ENGINE = os.environ.get(
     "DB_ENGINE",
-    "django.db.backends.mysql"
+    "django.db.backends.sqlite3"
 )
-
 if DATABASE_URL:
     import dj_database_url
 
