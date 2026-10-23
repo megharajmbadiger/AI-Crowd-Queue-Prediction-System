@@ -11,14 +11,19 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
+
 ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "ai-crowd-queue-prediction-system-br.vercel.app",
+    "ai-crowd-queue-prediction-system-brrv.vercel.app",
+]
+ALLOWED_HOSTS += [
     host.strip()
-    for host in os.environ.get(
-        "DJANGO_ALLOWED_HOSTS",
-        "localhost,127.0.0.1,testserver"
-    ).split(",")
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
+
 
 # Applications
 INSTALLED_APPS = [
