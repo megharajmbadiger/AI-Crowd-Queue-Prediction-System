@@ -2,22 +2,32 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load local environment variables from the project root .env file
+load_dotenv(BASE_DIR / ".env")
+
 
 # Security
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
-    "django-insecure-local-development-only-key"
+    "django-insecure-local-development-only-key",
 )
+
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
 
+# Allowed hosts
+# ".vercel.app" supports your Vercel production and preview hostnames.
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "ai-crowd-queue-prediction-system-br.vercel.app",
-    "ai-crowd-queue-prediction-system-brrv.vercel.app",
+    ".vercel.app",
 ]
+
+# Optional additional hostnames from environment variables
 ALLOWED_HOSTS += [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
@@ -38,6 +48,7 @@ INSTALLED_APPS = [
     "crowd",
 ]
 
+
 # Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -50,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
 
 ROOT_URLCONF = "backend.urls"
 
@@ -70,12 +82,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-# Database
+
+# Database: Neon PostgreSQL in production, SQLite locally by default
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
 DB_ENGINE = os.environ.get(
     "DB_ENGINE",
-    "django.db.backends.sqlite3"
+    "django.db.backends.sqlite3",
 )
+
 if DATABASE_URL:
     import dj_database_url
 
@@ -101,7 +116,7 @@ else:
             "ENGINE": "django.db.backends.mysql",
             "NAME": os.environ.get(
                 "MYSQL_DATABASE",
-                "ai_crowd_queue"
+                "ai_crowd_queue",
             ),
             "USER": os.environ.get("MYSQL_USER", "root"),
             "PASSWORD": os.environ.get("MYSQL_PASSWORD", ""),
@@ -113,27 +128,42 @@ else:
         }
     }
 
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
     },
 ]
+
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
+
 
 # Static files
 STATIC_URL = "static/"
@@ -144,13 +174,17 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
 # CORS
+# Set CORS_ALLOWED_ORIGINS in Vercel to your frontend URL.
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
@@ -160,6 +194,7 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+
 # Django REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -167,8 +202,10 @@ REST_FRAMEWORK = {
     ],
 }
 
+
 # Email
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 
 # Production security
 if not DEBUG:
