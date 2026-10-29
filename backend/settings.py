@@ -1,12 +1,11 @@
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load local environment variables from the project root .env file
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -20,19 +19,35 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
 
 # Allowed hosts
-# ".vercel.app" supports your Vercel production and preview hostnames.
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    ".vercel.app",
 ]
 
-# Optional additional hostnames from environment variables
+# Add explicitly configured hosts.
 ALLOWED_HOSTS += [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
+
+# Add the hostname supplied by Vercel, if available.
+VERCEL_URL = os.environ.get("VERCEL_URL", "").strip()
+if VERCEL_URL:
+    vercel_host = urlparse(
+        VERCEL_URL if "://" in VERCEL_URL else f"https://{VERCEL_URL}"
+    ).hostname
+    if vercel_host:
+        ALLOWED_HOSTS.append(vercel_host)
+
+# Keep the known project domains.
+ALLOWED_HOSTS += [
+    "ai-crowd-queue-prediction-system-br.vercel.app",
+    "ai-crowd-queue-prediction-system-brrv.vercel.app",
+]
+
+# Remove duplicates.
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
 
 
 # Applications
@@ -83,9 +98,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 
-# Database: Neon PostgreSQL in production, SQLite locally by default
+# Database
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
 DB_ENGINE = os.environ.get(
     "DB_ENGINE",
     "django.db.backends.sqlite3",
@@ -184,9 +198,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # CORS
-# Set CORS_ALLOWED_ORIGINS in Vercel to your frontend URL.
 CORS_ALLOWED_ORIGINS = [
-    origin.strip()
+    origin.strip().rstrip("/")
     for origin in os.environ.get(
         "CORS_ALLOWED_ORIGINS",
         "http://localhost:5173,http://127.0.0.1:5173",
@@ -215,4 +228,6 @@ if not DEBUG:
     )
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
+
+    # Vercel handles HTTPS; avoid redirect loops.
+    SECURE_SSL_REDIRECT = False
